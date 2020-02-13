@@ -1,4 +1,4 @@
-﻿javdbFQ,https://javdb.com/
+javdbFQ,https://javdb.com/
 javdb①,https://javdb1.com/
 javdb②,https://javdb2.com/
 javdb③,https://javdb3.com/
