@@ -1,6 +1,6 @@
 javdbFQ,https://javdb.com/
-javdb¢Ù,https://javdb1.com/
-javdb¢Ú,https://javdb2.com/
-javdb¢Û,https://javdb3.com/
-javdb¢Ü,https://javdb4.com/
-javdb¢Ý,https://javdb5.com/
+javdbâ‘ ,https://javdb1.com/
+javdbâ‘¡,https://javdb2.com/
+javdbâ‘¢,https://javdb3.com/
+javdbâ‘£,https://javdb4.com/
+javdbâ‘¤,https://javdb5.com/
