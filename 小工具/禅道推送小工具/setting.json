@@ -3,6 +3,7 @@
     "Cookie":"禅道用户Cookie",
     "PushWebHook":"钉钉推送：https://oapi.dingtalk.com/robot/send?access_token=xx",
     "PushKey":"禅道推送信息",
+    "PushNumber":["158xxxxx"],
     "Url":"禅道的域名",
     "Timing":"定时 例子:07:00:00",
     "Default":{
@@ -17,7 +18,7 @@
             "Proxy-Connection":"keep-alive",
             "Referer":"禅道的域名",
             "Upgrade-Insecure-Requests":"1",
-            "User-Agent":"自己的User-Agent"
+            "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36"
         }
     }
 }
