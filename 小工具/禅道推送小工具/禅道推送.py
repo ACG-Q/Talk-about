@@ -22,9 +22,9 @@ InFosRegex = "class=\"tile-title\">(.*?)</div>.*?class=\"tile-amount\">(.*?)</"
 NameRegex = "class='user-name'>(.*?)</"
 
 # 推送
-PushFlag = False # 推送标识
 PushMsg = None
 PushWebHook = None
+PushNumber = []
 
 # 头部
 headers = None
@@ -52,14 +52,17 @@ def pushToDingTalk():
                 "content": PushMsg
             },
             "at":{
-                "isAtAll": PushFlag
+                "atMobiles":PushNumber,
+                "isAtAll": False
             }
         }
         newheaders = {
             'Content-Type': 'application/json'
         }
-        response = requests.post(PushWebHook, data=json.dumps(Json), headers=newheaders)
-        _loggin(DEBUG,f"Http Code:{response.status_code}")
+        if PushWebHook:
+            response = requests.post(PushWebHook, data=json.dumps(Json), headers=newheaders)
+            response.raise_for_status()
+            _loggin(DEBUG,f"发送成功,Http Code:{response.status_code}")
     except requests.exceptions.HTTPError as exc:
         _loggin(ERR,"消息发送失败， HTTP error: %d, reason: %s" % (exc.response.status_code, exc.response.reason))
         raise
@@ -74,35 +77,38 @@ def pushToDingTalk():
         raise
 
 def getInfo():
-    global PushMsg,PushFlag
+    global PushMsg
     _loggin(INFO,"开始获取信息")
     try:
-        url = ZENTAOURL + KAIYUAN
-        response = requests.get(url,headers=headers)
-        # print(response.text)
-        vesion = re.search(VesionRegex,response.text,re.M|re.I).group(1).replace(" ", "")
-        # print(vesion)
-        PushMsg += f"\n禅道版本:{vesion}\000\t"
-        _loggin(INFO,f"禅道版本:{vesion}")
-        if VESION == vesion:
-            name = re.search(NameRegex,response.text,re.M|re.I).group(1)
-            # print(f"用户名：{name}")
-            PushMsg += f"By {name}\n"
-            info = re.search(InFoRegex,response.text,re.S).group()
-            infos = re.finditer(InFosRegex,info,re.MULTILINE | re.IGNORECASE | re.VERBOSE | re.DOTALL)
-            for matchNum, match in enumerate(infos, start=1):
-                Num = _getNum(match.group(2))
-                if matchNum in [1,2,3]:
-                    if Num > 0:
-                        PushFlag = True
-                        PushMsg += "❗"
-                        _loggin(INFO,f"❗{match.group(1)}\t数量:{Num}")
+        if ZENTAOURL:
+            url = ZENTAOURL + KAIYUAN
+            response = requests.get(url,headers=headers)
+            # print(response.text)
+            vesion = re.search(VesionRegex,response.text,re.M|re.I).group(1).replace(" ", "")
+            # print(vesion)
+            PushMsg += f"\n禅道版本:{vesion}\000\t"
+            _loggin(INFO,f"禅道版本:{vesion}")
+            if VESION == vesion:
+                name = re.search(NameRegex,response.text,re.M|re.I).group(1)
+                # print(f"用户名：{name}")
+                PushMsg += f"By {name}\n"
+                info = re.search(InFoRegex,response.text,re.S).group()
+                infos = re.finditer(InFosRegex,info,re.MULTILINE | re.IGNORECASE | re.VERBOSE | re.DOTALL)
+                for matchNum, match in enumerate(infos, start=1):
+                    Num = _getNum(match.group(2))
+                    if matchNum in [1,2,3]:
+                        if Num > 0:
+                            # PushMsg += "❗"
+                            _loggin(INFO,f"{match.group(1)}\t数量:{Num}")
+                            PushMsg += f"{match.group(1)}\000\t数量:{Num}\n"
+                        else:
+                            # PushMsg += "✨"
+                            _loggin(INFO,f"{match.group(1)}\t数量:{Num}")
+                            PushMsg += f"{match.group(1)}\000\t数量:{Num}\n"
                     else:
                         _loggin(INFO,f"{match.group(1)}\t数量:{Num}")
-                else:
-                    _loggin(INFO,f"{match.group(1)}\t数量:{Num}")
-                PushMsg += f"{match.group(1)}\000\t数量:{Num}\n"
-            PushMsg += f"推送时间：{_getTime()}"
+                        PushMsg += f"{match.group(1)}\000\t数量:{Num}\n"
+                PushMsg += f"推送时间：{_getTime()}"
     except BaseException as error:
         # print(f"推送失败:{error}")
         _loggin(ERR,error)
@@ -136,22 +142,37 @@ def _autoRun():
     if Time:autoRun()
 
 def _getSetting():
-    global Time,ZENTAOURL,PushMsg,PushWebHook,headers
+    global Time,ZENTAOURL,PushMsg,PushWebHook,headers,PushNumber
     path = "setting.json"
     # print(f"开始获取配置")
     _loggin(INFO,"开始获取配置")
+    setting = {
+        "Timing":None,
+        "Url":None,
+        "PushKey":"禅道推送信息",
+        "PushNumber":[],
+        "PushWebHook":None,
+        "Cookie":None,
+        "Default":{
+            "Headers":{
+                "Cookie":None
+            }
+        }
+    }
     try:
         with open("setting.json",encoding="utf-8") as f:
             setting = json.load(f)
-        Time = " "+setting["Timing"] or None
-        ZENTAOURL = setting["Url"] or "http://test.dfrobot.top:5000"
-        PushMsg = setting["PushKey"] or "禅道推送信息"
-        PushWebHook = setting["PushWebHook"] or ""
-        headers = setting["Default"]["Headers"] or {}
-        headers["Cookie"] = setting["Cookie"] or ""
     except BaseException as error:
         # print(f"配置获取失败:{error}")
         _loggin(ERR,error)
+    finally:
+        Time = " "+str(setting["Timing"])
+        ZENTAOURL = setting["Url"]
+        PushMsg = setting["PushKey"]
+        PushNumber = setting["PushNumber"]
+        PushWebHook = setting["PushWebHook"]
+        headers = setting["Default"]["Headers"]
+        headers["Cookie"] = setting["Cookie"]
 
 def _getNum(NumInFo):
     return int(re.match('<a.*>(.*)',NumInFo).group(1) if re.match('<a.*>(.*)',NumInFo) else NumInFo)
