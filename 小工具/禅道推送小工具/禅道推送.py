@@ -110,8 +110,7 @@ def getInfo():
                         PushMsg += f"{match.group(1)}\000\t数量:{Num}\n"
                 PushMsg += f"推送时间：{_getTime()}"
     except BaseException as error:
-        # print(f"推送失败:{error}")
-        _loggin(ERR,error)
+        _loggin(ERR,f"信息获取失败:{error}，\n原因:1.网络不稳定2.网页Cookie失效")
 
 def autoRun():
     # print("开始设置定时器")
@@ -131,7 +130,7 @@ def autoRun():
             _loggin(INFO,f"距离下次运行:{next_time}")
     except BaseException as error:
         # print(f"设置定时器失败:{error}")
-        _loggin(ERR,error)
+        _loggin(ERR,f"设置定时器失败:{error}")
     
 def _autoRun():
     _getSetting()
@@ -164,7 +163,7 @@ def _getSetting():
             setting = json.load(f)
     except BaseException as error:
         # print(f"配置获取失败:{error}")
-        _loggin(ERR,error)
+        _loggin(ERR,f"配置获取失败:{error}")
     finally:
         Time = " "+str(setting["Timing"])
         ZENTAOURL = setting["Url"]
